@@ -1,0 +1,6 @@
+# Normalise line endings so Windows, macOS and Linux checkouts produce identical diffs.
+* text=auto eol=lf
+*.parquet binary
+*.xlsx binary
+*.pkl binary
+*.sqlite binary
