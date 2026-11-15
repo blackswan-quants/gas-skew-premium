@@ -1,0 +1,63 @@
+[project]
+name = "gasskew"
+version = "0.1.0"
+description = "Is the upside implied-volatility wing overpriced in Henry Hub and TTF natural gas options?"
+authors = [{ name = "BlackswanQuants" }]
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.7",
+    "mypy>=1.13",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+# --------------------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "B",        # bugbear
+    "SIM",      # simplify
+    "D",        # pydocstyle (NumPy convention below)
+    "ANN",      # type annotations
+    "T20",      # no print()
+    "FA",       # from __future__ import annotations
+    "PTH",      # pathlib over os.path
+    "RUF",
+]
+ignore = [
+    "D105",          # magic-method docstrings
+    "D107",          # __init__ docstrings (documented on the class)
+    "N803", "N806",  # allow math-style names like K, T, F, S in quant code
+    "RUF001", "RUF002", "RUF003",  # allow greek letters in docstrings/comments
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
+
+# --------------------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+packages = ["gasskew"]
+warn_unreachable = true
