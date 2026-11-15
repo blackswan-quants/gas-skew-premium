@@ -1,65 +1,58 @@
 # gas-skew-premium
 
-Investigates whether natural gas implied volatility, particularly the **upside wing**, is
-overpriced in the **Henry Hub** (NYMEX) and **TTF** (ICE Endex) options markets.
+Is natural gas implied volatility, especially the **upside wing**, overpriced in **Henry Hub**
+(NYMEX) and **TTF** (ICE Endex) options?
 
-> Status: project skeleton. Infrastructure, tooling and conventions are in place; data
-> sources and research phases are added through pull requests.
-
-## Quick start
+## Setup
 
 ```bash
-# prerequisites: uv (https://docs.astral.sh/uv/) and git
-uv sync                         # creates .venv with Python 3.12 + pinned deps from uv.lock
-cp .env.example .env            # optional: override paths, add API keys
-uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
-uv run gasskew info             # smoke check: prints versions and resolved settings
-uv run pytest                   # unit tests
+git clone https://github.com/blackswan-quants/gas-skew-premium.git
+cd gas-skew-premium
+uv sync                  # Python 3.12 + exact tool versions (needs https://docs.astral.sh/uv/)
 ```
 
-Optional Qt table viewer for raw data: `uv sync --extra gui`.
+Before pushing, run the same checks as CI:
+
+```bash
+uv run ruff format .
+uv run ruff check .
+uv run mypy
+```
 
 ## Data
 
-Market data is **never committed**: it is vendor-licensed and large. Everything under
-`data/` except the checkpoint folder is git-ignored. Each person keeps their own copy in
-`data/` (or points `GASSKEW_DATA_DIR` elsewhere), and API keys live in `.env`.
+From [Databento](https://databento.com): Henry Hub via `GLBX.MDP3`, TTF via `NDEX.IMPACT`.
+Never committed: it is licensed and this repo is public. One downloader holds the API key and
+saves files to the team's shared drive; everyone else reads from there.
 
-| market | futures | options |
-|---|---|---|
-| Henry Hub | NYMEX NG | NYMEX LN / ON |
-| TTF | ICE Endex TFM | ICE Endex TFO |
+## Roadmap
 
-Sources, file names and schemas are documented here as loaders are added.
+Each step lands as one or more pull requests, and the lead checks it before the next step
+builds on it. Step 1 runs until mid-December; the rest from mid-February to the final report
+at the end of May.
 
-## Layout
+1. **data**: Henry Hub and TTF option settlements and futures (Databento), plus storage
+   (EIA, AGSI+); coverage and quality checked before anything is built on them
+2. **smiles**: Black-76 prices, implied vols, SVI fits and skew measures (risk reversal,
+   butterfly, wing minus ATM) for each expiry
+3. **skew premium**: model-free implied vs realised skewness at 30 days: does the skew realise?
+4. **premia**: is variance overpriced, and is the upside wing rich relative to ATM?
+5. **dynamics**: when and why: seasonality, co-movement with price and vol, storage,
+   persistence, and how TTF differs from Henry Hub
+6. **trades** (if time allows): do simple structures capture the premium after costs?
+7. **report**: final report on the club template, end of May
 
-```
-src/gasskew/         library code, one module per concern
-  config.py          pydantic-settings, reads .env (GASSKEW_* variables)
-  exceptions.py      domain exceptions (DataFetchError, StaleDataError, LookAheadError, ...)
-  temporal.py        filter_as_of: D-1 discipline for every pricing/analysis function
-  checkpoints.py     pickled raw / parsed / validated stage checkpoints
-  log.py             rich logging setup
-  cli.py             `gasskew` CLI (typer); one subcommand per pipeline phase
-tests/               pytest unit tests
-notebooks/           end-to-end phase notebooks, each asserting its numeric outputs
-scripts/             one-off utilities
-data/                raw market data (git-ignored)
-data/checkpoints/    generated stage pickles (git-ignored)
-outputs/             figures, SQLite results DB, reports (git-ignored)
-```
+Every headline result is reported with and without the 2021–22 crisis
+(1 Jul 2021 to 31 Dec 2022).
 
 ## How we work
 
-- `main` is protected: every change, including the lead's, lands through a pull request
-  with passing CI. Direct pushes and force-pushes are blocked.
-- Branch from `main` with a conventional prefix, e.g. `feat/hh-option-loader`,
-  `fix/ttf-expiry-calendar`, `docs/methodology`.
-- Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/)
-  (`feat:`, `fix:`, `docs:`, `chore:`, `test:`, `refactor:`). The commit-msg hook rejects
-  anything else.
-- Pre-commit runs ruff, mypy and the fast tests before every commit; CI runs the same
-  checks on every pull request.
-
-Coding standards are in [CONTRIBUTING.md](CONTRIBUTING.md).
+1. **Task**: the lead opens a GitHub issue for each task and assigns it to you. It says what
+   to do and when it is done; ask questions in the issue.
+2. **Branch**: in your clone, branch from an up-to-date `main`, named after the issue:
+   `git switch main && git pull && git switch -c feat/12-hh-settlements`.
+3. **Push**: commit following [CONTRIBUTING.md](CONTRIBUTING.md), then push the branch to this
+   repo: `git push -u origin feat/12-hh-settlements`.
+4. **Pull request**: open it against `main`, fill in the template and write `Closes #12`, so
+   merging closes the issue. CI must pass.
+5. **Review session**: walk the lead through every line; the lead approves and squash-merges.
