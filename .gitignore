@@ -1,33 +1,17 @@
 # --- Python / uv
 __pycache__/
 *.py[cod]
-*.egg-info/
 .venv/
-build/
-dist/
 
-# --- tooling caches
+# --- tool caches
 .ruff_cache/
 .mypy_cache/
-.pytest_cache/
-.coverage
-htmlcov/
-.ipynb_checkpoints/
 
-# --- secrets / local config (copy .env.example to .env)
+# --- secrets
 .env
 
-# --- market data: vendor-licensed and large, never committed (see README "Data")
-data/*
-!data/checkpoints/
-data/checkpoints/*
-!data/checkpoints/.gitkeep
-
-# --- generated artefacts
-outputs/*
-!outputs/.gitkeep
-*.sqlite
-*.pkl
+# --- market data is never committed (see README "Data")
+data/
 
 # --- OS / editors
 .DS_Store
